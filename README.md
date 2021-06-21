@@ -29,7 +29,8 @@ Once I confirm it is ok to post publicly here I will do so and start on
 recompiling it for newer ARM based hardware. I have decided to use an
 older dev kit I had MCBSTR9 to start since it has the same type of lcd
 originally used in the original TRAKBOX and also has a RTC and lots of
-i/o and serial ports wich already have the rs-232 drivers installed.
+i/o and serial ports which already have the rs-232 drivers installed.
+
 ![mcbstr9](https://user-images.githubusercontent.com/20524747/122818201-c1e27e80-d28d-11eb-8ae6-ee3afeb111ed.jpg)
 
 So check back for progress and 73!
