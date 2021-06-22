@@ -4,7 +4,7 @@ Emulator of Amsat/Jamsat Trakbox Hardware, emulates 8052 Processor and all i/o s
 IMPORTANT UPDATE! Originally, this was going to be a project to emulate the older trakbox hardware including CPU so that older firmware image would operate on newer ARM based hardware. This was due to the fact I could not make contact with original Author and there was concern that the original software was lost. However, after one more try to find the Author, we have had success! Dr. Sasato JA6FTL sent me the following email on June 20th of 2021.
 ------------------------------------------------------------------
 Hello OM,
-I had phone call from Wakitasan,JE8PEL about my old C-source code of
+I had phone call from Wakitasan,JE9PEL about my old C-source code of
 TrakBOx.
 It has flown many time after the last TrakBox EPROM release.
 My TrakBOx development system was missing due to old PC failure.
