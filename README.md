@@ -33,5 +33,13 @@ i/o and serial ports which already have the rs-232 drivers installed.
 
 ![mcbstr9](https://user-images.githubusercontent.com/20524747/122818201-c1e27e80-d28d-11eb-8ae6-ee3afeb111ed.jpg)
 
-So check back for progress and 73!
+Thanks to Martin W6LHI/G8LHI who found this github page and contacted me to tell me he found his old original trakbox has
+sent it to me to use for reference! It's in great shape! 
+![IMG-2851](https://user-images.githubusercontent.com/20524747/170761312-d44bcdd4-4b72-4647-9db8-3784334cf27e.JPG)
 
+I have successfully compiled the original source code for trakbox. I will burn an eprom and test it in Martins unit to validate
+that it does work. After which I will update the data in the code to bring it up to 2021-2030 and publish a new rom image for
+anyone wanting to still use their units. Then I will port this code to a newer processor and see how that works out. The
+goal is to replace the trakbox hardware with a more modern faster and lower power device.
+
+Check back for updates. 73
