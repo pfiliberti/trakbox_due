@@ -1,0 +1,235 @@
+ TrakBox v3.50b   Information  98-12-15
+ =====================================
+
+ TrakBox v3.50a   Information  98-12-03
+ ======================================
+
+ TrakBox v3.40e   Information  97-09-10
+ ======================================
+ 
+ TrakBox v3.40a   Information  97-01-20
+ ======================================
+ AD 2000 passover problem solved.
+
+ TrakBox v3.30g/h Information  94-10-10
+ ======================================
+ Bug in North start rotor flip action was fixed.
+ Mic click pulse width and interval now can be configurable.
+ 
+ TrakBox v3.30f   Information  94-09-04
+ ======================================
+ reported bug in v3.30e were corrected. PSE DISCARD v3.30e
+                                        ^^^^^^^^^^^^^^^^^^
+ TrakBox v3.30e   Information  94-08-20
+ ======================================
+ New function introduced.
+ Satellite selection limit value expanded from 15 to 60.
+ Host mode access from real time tracking.
+ 
+ Bug fix of conflict in Parking and Flipping action.
+
+ TrakBox v3.30c   Information  94-07-02
+ ======================================
+ Bug fix of ICOM CAT port.
+ 
+ TrakBox v3.30b   Information  94-07-01
+ ======================================
+ Minor bug were fixed.
+ 
+ TrakBox v3.30a   Information  94-06-01
+ ======================================
+ Flip mode operation installed.
+ Code size optimize done.
+ Notice for ADC-R radder satellite selection:
+    From this version the ADC-R radder satellite selection definition SW
+    is moved from hardware (CN9-6) to software SW. (read DOC carefully)
+
+ TrakBox v3.20d,e   Information   94-05-22
+ =========================================
+ 
+ For future upgrade, I need more EPROM space and the AMSAT format uploading
+ is omitted in this version.
+ 
+ There reported un_expected T_B rotor error mode trouble. With v3.20,
+ user can disable the function from menu6-4 or station.dat file.
+ Due to my poor explanation, misunderstang about [timeout time from rotor
+ error mode] is caused.  In v3.20e, default setting is changed to OFF the
+ function.  For more understanding, read DOC file with care.  
+
+ I received problem report about Kepler elements uploading.  Full speed
+ uploading without any line to line pasing may cause trouble. In this case,
+ set 100mSec pase in your terminal program.  There is no problem with PcPlus,
+ SatSked, but Procomm has such troble.
+
+ Taking the advice from Schlomo,4X1AS, the checksum number is noted in the
+ document. Checksum calculation includes FF's.
+ 
+ [NOTICE] The station data file format is changed in v3.20e.
+ 
+ TrakBox v3.20-beta Information   94-03-10
+ =========================================
+
+ In this beta code, a few new features were introduced.
+ * Hardware Doppler correction for CAT.
+  
+        CN9-pin6        => CAT correction  UP by 50Hz step
+            pin8        =>                 DWN
+           
+        If CN9-7 is grounded,
+
+        CN9-pin6        => Slew            UP by 50Hz step
+            pin8        =>                 DWN
+
+  In PSK reception, you can input the mic click signal (active LOW) to
+  CN9-6/8. This function is under test and need your feedback.
+  The known problem is T_B CAT command cannot catch up in over head pass.
+ 
+ * 4 uplink frequency support.
+ * You can disable the rotor smoke protection function.
+ * Antenna position monitor h/w SW was changed from CN9-7 to P1.4(CN3-5).
+      
+ --------------------------------------------------------------------------
+ TrakBox v3.10 Information.
+ ==========================
+ 
+ Bugs in COM port and RTC initialization are fixed (I hope so).
+ I made minor modification and added new function. Pse refer to TRK310.DOC. 
+ -------------------------------------------------------------------------- 
+
+ TrakBox v3.01 Information. 	
+ ==========================
+ 
+ * Notice.
+ When you install or exchange with new EPROM,  open the battery back up
+ jumper and discharge the RAM.   Without this procedure, new code may 
+ read fault constant and occasionally, RS port cannot be initialized properly.
+ 
+ * Alternate CAT port.
+ In TS711/811 combination, it needs fully separated CAT line.
+ Alternate CAT port for uplink TX is obtained from CN3-6.
+  
+     CN3-6   ----- U6 pin5
+     U6 pin6 ----- CN4 pin3   -------     to TX (145MHz)
+                   CN4 pin5   -------     GND  
+                   CN4 pin2   -------     to RX (435MHz)
+ 
+ * P1_6
+ At AOS CN3-7(P16) level becomes LOW and is usable for PC,TRX power
+ control.
+ 
+------------------------------------------------------------------------------
+ TrakBox v3.00a Instruction notes         93-06-14       by  JA6FTL
+
+ I am sorry there is no detailed instruction for TrakBox. Here are some hint 
+and kinks for using TrakBox.
+
+[Known problems]
+================
+1.RTC hopping.
+  Sometimes, RTC clock begins to run extremely quickly and it doesn't accept
+  time set words.  This situation is caused by EPROM exchange even if the
+  backed Vcc is fed to the RTC chip.  Usual system reset procedure by menu
+  6-9 cannot cure the problem.  In that case, remove JMP-13 and discharge
+  Vcc from RTC for a few minutes or short RTC pin 9-18.  I tried RTC reset
+  routines according to the technical data sheet but could not solve this
+  problem.
+  => fixed in v3.10
+    
+2.YAESU/KENPRO dual controller turn out.
+  KR-5400A/B dual rotor controller needs open for BR4.  U11,2803A or TOSHIBA 
+  62083AP Darlington TR array IC can switch 50V-500mA. But pin#10 COM is
+  connected to Vcc(+5V) through BR4, then it is needed to cut for switching
+  higher than 5V line.
+  
+3.CAT control for YAESU/ICOM with TTL out put.
+  In direct interface TrakBox to YAESU/ICOM CAT port, it is needed signal
+  polarity inversion. Use spare invertor of U6,74LS04.
+  
+     U6 pin2 ----- U6 pin5
+     U6 pin6 ----- CN4 pin3   ------- to YAESU,ICOM (TTL)
+        GND  ----- CN4 pin5   -------     GND  
+  No need if you use RS-232C level converter from the manufacturer.
+  
+4.CPU
+  There are many second sources of 803x/805x chips from many manufacturers.
+  There is minor difference and the older TrakBox RTC cannot work properly
+  with CMOS chip (80C31 etc). The version 3.00 and later  fully supports
+  any type of CPU including 8031/32/C31/C32 or 8051/52/C51/C52.
+  
+5.8255PIO chip and back up battery.
+  NMOS 8255 chip is no problem. But in CMOS PIO, a considerable current is 
+  flow out through U16A,74HC139 pin#5 to 8255 pin#6 in back up state. 
+  The current reaches to 1mA. (In NMOS 4uA)
+  Then, the life of battery is shortened remarkably.  If the backup 
+  voltage becomes lower than 3.0V, RTC loses accurate time.
+  MUST use NMOS chip.
+   
+
+[TrakBox Commands]
+==================
+1. Main menu.
+ 1. 1-8
+ 2. m or M	: go to multi track mode
+ 3. s or S	: go to single track mode (same with 1.
+
+2.Single track mode
+ 1. e or E	: rotator control on off (toggle)
+ 		  If ON, there appear tracking mark *,!,&
+		  * => single track mode
+		  ! => multi track without priority function.
+		  & => multi track with priority function.
+ 2. SPC,BS	: forward or backward the object satellite.
+ 3. p or P	: toggle ! and & mode (this is effective in the
+		  single track mode shifted from multi track mode)
+ 4. n or N	: Next satellite.
+		  (this is effective in real tracking mode shifted from
+	          multi track mode)
+ 5. +,-,0	: Doppler compensation.
+		  add or subtract 100Hz for doppler corrected frequency.
+		  0 returns to the calculated frequency.
+ 6. t or T	: Tune TRX (new from v3.10).
+ 7. i or I      : Initialise TRX mode/freq (new from v3.10) 
+		  ([T]rack and [S]tart command words were removed in v3.10)
+ 8. q or Q	: Quite the mode and return to main menu.
+ 9. ?		: returns object satellite name to terminal.
+ 10. y or Y	: zero adjust for RTC.
+
+ 
+3.Multi track mode and Priority tracking.
+ 
+ The priority tracking function means this.
+ If multiple satellites are AOS simultaneously, TrakBox has two options.
+ 1. Track the earlier satellite until it's LOS and track the second satellite.
+ 2. Stop the earlier satellite before its LOS and go to second high priority
+    satellite instantly when its AOS.  This is priority tracking function.
+
+ You must set the multi tracking number from menu 3-5. Default value is 3.
+ maximum value is 5.
+
+ The priority order is satellite # 1>2>3>4>5. Then you must select the
+ highest satellite to #1 position.   In my case,  1.uo-22, and 2.kitsat
+ 3.ao-16.......   This function works very effectively combined with satellite 
+ scheduler program such as WA2N's SATSKED.
+
+ 1. e or E	: rotator control on off (toggle)
+ 		  If ON, there appear tracking mark !,&
+		  ! => multi track without priority function.
+		  & => multi track with priority function.
+ 2. p or P	: toggle ! and & mode.
+ 3. q or Q	: Quite the mode and return to main menu.
+
+ Multi tracking in standalone mode.
+ Priority tracking is effective in standalone mode too. After starting TrakBox
+ with standalone mode, By just clicking the satellite selection SW to 0(zero)
+ position, you can toggle single track and multi tracking mode.  The tracking 
+ mark indicates the mode.  *:single tracking  !:multi tracking without priority
+ &:multi tracking with priority.  In multi tracking mode, LCD displays the SW 
+ selected object (1-5).  But the SW position exceeds the configured number, 
+ warning message appears in LCD [Number Exceeded!].  You can't switch over "!"
+ and "&" mode within standalone mode.
+ 
+ If you have any comment or suggestion, Pse let me know.
+ 
+ de Sueo, JA6FTL @uo-22,@kitsat   sasato@nisiq.net ja6ftl@amsat.org
+
+

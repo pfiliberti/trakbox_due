@@ -1,0 +1,86 @@
+TrakBox_Turbo version installation info.
+========================================
+
+Dallas semiconductor released 80C32 code compatible high speed CPU
+DS80C320.  This chip has upper compatible with Intel 8032/8052 series
+CPU and three times faster with the same crystal.  There are many other 
+additional functoins (two serial ports, watchdog timer, many interrupt
+sources, high X-tal clock etc..), and now, TrakBox can work with this
+CPU.   The calclation speedup is 4 times faster than ordinary T_B.
+
+You need (1) DS80C320 CPU,  (2) 22.118400MHz X-tal (3) 320TRK EPROM
+
+[Install]
+
+1.At first, you must certificate your TrakBox is working with original
+  EPROM and CPU. (8031,32,51,52 CMOS or NMOS).
+
+2.Off the battery back up jumper (JP13)
+
+3.Replace the original CPU with DS80C320.
+  Check the T_B is running with new CPU.  The speed up  1.5 or 2 times
+  faster than the original.
+
+4.Replace the EPROM with Turbo EPROM (320_xxx.ROM).
+  Check the T_B can run with COM port baud rate 4800.
+  
+5.replace the original X-tal(11.0592MHz) with 22.1184MHz.
+
+6.Now, Your TrakBox_Turbo is completed.
+
+[Notice]
+
+     1) New CPU with 22Mhz clock rate needs high access time EPROM
+     	and RAM. In my case, I used 120ns EPROM (Mitsubishi M5M27C512K-12)
+	and 80ns RAM (62256LP-8).  If your T_B doesn't run, you may replace 
+	with high speed EPROM(-12 means 120nSec access time).
+
+	Many beta tester reported that turbo code run with fast EPROM
+	and RAM from many supplyer.
+
+     2) One another solution to the higher access time problem,
+        replace the address latch IC(U1 74ALS373) to high speed IC(74F373)
+	most of all EPROMs are usable with this replacement.
+	
+     3) Dallas Semiconductor released preliminaly DS80C320 chip and
+	the early lot  has bugs in micro code.  The present version
+	has xxxxA6-yyy on the lavel.  If you have xxxxA3-yyy version, this
+	chip is not usable for TrakBox Turbo.
+
+[Dallas Semiconductor info.]
+
+        DS80C320	$12.00
+
+	DALLAS SEMICONDUCTOR
+	4401 South Beltwood Parkway
+	Dallas,  Texas  75244-3292
+	
+	tel: (214)450-0448
+	Fax: (214)450-3715
+	overseas call: (214)450-5351
+	Credit card sales service: 1-800-336-6933
+
+[Parts source information by VE2ALQ]
+-----------------
+For those people out here looking for components
+to upgrade TrakBox to turbo following was (is) my source for every
+component needed:
+
+JDR Electronics
+Phone 408-494-1400
+FAX   408-494-1420
+
+North America Toll Free  Phone 1-800-538-5000
+                         Fax   1-800-538-5005  
+
+Good luck folks this is where I got all of mine, no problem with
+single GTY orders.  Have a Good One  -.-  -. 
+
+Darrell, VE1ALQ
+-----------------
+
+If you have any other sorce information, PSE let me know. I'll include it
+for those who has difficulty in their local parts shop.
+
+de Sueo,  JA6FTL
+

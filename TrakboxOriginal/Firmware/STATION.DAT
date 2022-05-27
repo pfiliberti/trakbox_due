@@ -1,0 +1,62 @@
+;
+; STATION.DAT for TrakBox v3.50b    Dec.15  1998
+; Each token must be delimited with space character.
+; 
+; 1-st line (station elements)
+;   1,CALL_SIGHN,LATITUDE,LONGITUDE,HEIGHT,rotor_zero_position and R-radder/
+;     ADC selection, COM port baud rate
+;     (COM port rate:1200/4800/9600  *Turbo version supports 19200)
+;
+; 2-nd line (rotor ADC calibration)
+;   2,Azimuth_mini,Az_max,Elevation_mini,El_max, Flip_mode_Flag(F/null)
+;
+; 3-rd line (deadband and skew value)
+;   3,Az_dead_band,El_dead_band,Az_skew,El_skew
+;
+; 4-th line (CAT port configuration)
+;   4,CAT_rig,Full/AOS_control,ICOM_rx_address,ICOM_tx_address,baud_rate
+;   (CAT_rig:KENWOOD/KENWOOD711/ICOM/YAESU_o/YAESU_847/YAESU_736)
+;   (baud_rate: 4800/9600/19200    *Turbo version supports 1200)
+;   FM wide filter selection of YAESU => YAESUw736/YAESUw847
+;
+; 5-th line (Antenna parking and P_16 info.)
+;   5,1/0(ON/OFF)[m][n],park-Az,park-El,rotor start EL value,P16 ON EL value, 
+;   OFF EL value.  m:mic click pulse width n:mic click pulse interval
+;
+; 6-th line (TRX parking information)
+;   6,1/0(1/0),RX_parking_freq,TX_parking_freq,RX_parking_mode,TX_parking_mode,
+;   timeout value for rotator error(sec)
+;
+; 6 11 145.00  439.820  FM  FM  130
+;   ||   |       |      |   |   | 
+;   ||   |       |      |   |   timeout value for rotator error
+;   ||  RX_Freq TX_freq |   |
+;   ||             RX_mode  TX_mode  
+;   |Rotator error function
+;   Parking function
+;
+; 7-th line (Limitation for Rotator movement info.)
+;   7,1/0, Azimuth minimum value, Az max, El min,El max.
+;
+;==================== CUT HERE =====================
+;
+1 JA6FTL  27.391  128.657  50  S 19200
+2 22  836  25  981 F
+3 3   1   0   0
+4 KENWOOD  FULL  2E  2E 4800
+; 4 YAESUw736  FULL  00  00 4800
+; 4 YAESU_847  AOS  00  00 4800
+; 4 ICOM FULL 2E 2E 19200
+5 0  210  0  -2.0  -4.0  -6.0
+6 11  145.00  439.820  FM  FM  130
+7 0  270  90  0   45
+;
+;===================== CUT HERE ====================
+;  With this configulation, antenna parking position is Az270,El0
+;  Antenna movement is limited within 270(West)-0(North)-90(East)
+;  and elevation 0-45 degrees. If you don't need limit, set the SW 0
+;  EL rotor control start at EL = -2.0degree.(ROM default = -2.0)
+;  CN3 pin7 become LOW at AOS elevation = -4.0 and rise HIGH at LOS -6.0
+;  degree.
+;  Set Error mode SW=0 if you want to disable the function.
+;

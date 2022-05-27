@@ -1,0 +1,3 @@
+UO-22   435.120 145.975 fm      fm      cat     no
+AO-16   437.025 145.940 usb     fm      mic     no
+

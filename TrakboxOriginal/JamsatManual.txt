@@ -1,0 +1,1867 @@
+
+
+
+
+　　　　   　　　　　　8052 board satellite tracking software　
+
+　    　　　　　　　　　　　　　　operation manual
+
+                  TRAKBOX ROM Version 3.00
+　
+
+
+
+
+
+                              　　
+
+   　　                 　　 Published March 28, 1993
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 　　　　　　　　　　     　　　　JAMSAT
+
+ 　　　                   　Japan Amateur Satellite Communication Association
+
+
+
+
+
+
+
+
+
+
+
+
+
+ "TracBox" instruction manual
+
+　　　　　　　　　　　　　　　　Table of contents page
+
+2-1 Introduction 1
+
+2-2 Connection with rotator controller (Azimuth / elevation control of antenna) 2
+        Connection example 1 Emoto dual controller EV-700D2 / D5 3
+        Connection example 2 KENPRO KR-5400A / B 3
+　　　　Connection example 3 Emoto 747SR 4
+　　　　Connection example 4 KENPRO KR-400 / 500 4
+
+2-3 Additional hardware when grouping as a stand-alone TrackBox 5
+        2-3-1 Satellite selection SW 5
+　　　　2-3-2 LCD module connection diagram 6
+        2-3-3 LED connection 7
+　　　　2-3-4 Antenna control SW connection 7
+
+2-4 Connection with wireless device 7
+
+2-5 Software installation (ROM implementation) 11
+                                                                   　
+2-6 How to use TrackBox software 12
+ 　
+        2-6-1 Input of QTH information of own station (Main menu 4) 13
+        2-6-2 Real-time clock calibration (main menu 5) 14
+　　　　2-6-3 Update of orbital elements (Main Menu 3) 14
+　　　　2-6-4 Schedule display (Main menu 2) 21
+        2-6-5 Configuration (Main Menu 6) 23
+        2-6-6 Real-time tracking (Main menu 1) 33
+        2-6-7 Multi-satellite tracking (main menu M) 35
+        2-6-8 Host mode (Main menu 7) 37
+2-7 How to use in standalone mode 39
+        About station information file (STATION.DAT) 42
+　　　　About satellite information file (FEQU.DAT) 43
+
+2-8 Summary 44
+
+
+
+ "TracBox" Instruction Manual '93 / 03/28
+                 Development charge JA6FTL / JAMSAT JG6MCG
+       　　　　　　　　　　
+
+[Note! VersaBoard-8052 is complete with the installation instructions below
+It is assumed that it works. RTC, A according to the procedure of initial operation check in the production manual
+After conducting an I / O test such as DC and confirming that it works without fail, this fur
+Please incorporate the muware. ]
+
+2-1 Introduction
+
+　W3IWI original BAS attached to "VersaBorder-8052"
+The IC satellite tracking program (8052 ported version) is fully functional for normal satellite tracking.
+However, there are some parts that I am not satisfied with in terms of speed and other aspects. this
+The firmware was originally developed and is written in C and assembler.
+increase. Users of the "VersaBoard-8052" board with this firmware
+A real-time satellite that operates standalone by incorporating it into ROM (U9)
+The tracking device is completed.
+
+　　Functions of "TracBox"
+
+  　　  * Operates in both terminal mode and standalone mode
+　　　* Real-time orbit calculation and antenna control of satellites
+　　　* Real-time calculation of frequency shift by Doppler and via serial port
+               And set the reception and transmission frequency of the rig
+　　　* Orbit required by uploading the satellite orbit element file from the terminal
+               Elementary automatic update
+　　　* Up to 60 orbit information is stored in RAM
+　　　* 15 tracking satellites can be selected with the digital rotary SW on the panel surface.
+　　　* Displays UTC, satellite name, azimuth, elevation, and phase on the LCD display.
+　　　* LED displays AOS and LOS
+　　　* AOS warning LED
+
+　
+
+
+
+
+
+                              　　―― 1 ――
+
+"Functions added in TrackBox v3.00"
+
+
+　　　* At the same time, the positions of up to 5 satellites are calculated and the AOS satellites are automatically tracked.
+                Chitrack function
+　　　* Even during satellite tracking, if a satellite with a high priority is AOS, the tracking is automatically switched.
+               Liority track function
+　　　* Station information Automatically update satellite additional information by file upload
+　　　* Automatically adjusts the reception frequency during Doppler tracking by clicking the microphone and AOS.
+                Set to AOS value
+　　　* Host mode function
+　　　* Parking function that moves the antenna to a preset position during non-AOS
+　　　* Rotator that controls the antenna only within the preset movement range
+                -Limit function
+　　　* Preset function to point the antenna in a preset direction
+　　　* Control the rotator directly from the keyboard
+　　　* Set the COM port baud rate to 1200-9600
+　　　* Doppler correction frequency in 100Hz steps from the keyboard during tracking
+                Correct
+　　　
+
+2-2 Connection with rotator controller
+
+　The AZ / EL dual rotator controller currently on the market is a computer
+    Since it has a terminal for the interface, is it "VersaBoard-8052"?
+    Can be connected directly to the controller.
+  　To accommodate controllers that do not have such an interface, "Ve
+    "rsaBoard-8052" is an open collector Darlington connection transistor
+    Array IC is available. This can be controlled up to 50V, 500mA, but this
+    With this, the rotator motor cannot be turned on / off directly, so relays and trials
+    It is necessary to make an external interface using KU. For details, each row
+    Please also read the instruction manual of the data controller.
+
+The basic wiring between "VersaBorder-8052" and the rotator is as follows.
+
+　VersaBoard Rotator Controller
+
+   CN5 (8255 port-C)
+     1 PC0 －－－－－－－－ ＞ CCW (left)
+
+　　　　　　　　　　　　　　　　　　　―― 2 ――
+     2 PC1 －－－－－－－－－ ＞ CW (right)
+     3 PC2 －－－－－－－－ ＞ DOWN
+     4 PC3 －－－－－－－－ ＞ UP
+     8 PC7 －－－－－－－－ ＞ BRAKE
+
+   CN12 (ADC in)
+     1 ADC0 <－－－－－－－－－ Azimuth position sense (0 ～ 5V)
+     2 ADC1 <－－－－－－－－－ Elevation location-on sense (0-5V)
+     5 GND －－－－－－－－－－ GND
+
+
+　　Then, the connection example is shown for a typical model. Rotator controller
+        Connect to the DIN connector on the rear panel of the box.
+
+　Connection example 1 Emoto dual controller EV-700D2 / D5
+
+
+   CN5 (8255 port-C) DIN terminal
+     1 PC0 ----------> CCW (left) 3
+     2 PC1 ----------> CW (right) 2
+     3 PC2 ----------> DOWN 5
+     4 PC3 ----------> UP 4
+     8 PC7 ----------- Without BRAKE
+
+  CN12 (ADC in)
+     1 ADC0 <---------- Azimuth sense (0-5V) 6
+     2 ADC1 <---------- Elevation sense (0-5V) 7
+     5 GND ----------- GND 8
+
+
+  Connection example 2 KENPRO KR-5400A / B
+
+
+   CN5 (8255 port-C) DIN terminal
+     1 PC0 ----------> CCW (left) 4
+     2 PC1 ----------> CW (right) 2
+
+　　　　　　　　　　　　　　　　　  ―― 3 ――
+
+     3 PC2 ----------> DOWN 5
+     4 PC3 ----------> UP 3
+     8 PC7 ---------- Without BRAKE
+
+   CN12 (ADC in)
+     1 ADC0 <---------- Azimuth sense (0-5V) 6
+     2 ADC1 <---------- Elevation sense (0-5V) 1
+     5 GND ----------- GND 8
+
+  Connection example 3 Emotator 747SR (use one for horizontal and one for elevation)
+
+
+   CN5 (8255 port-C) Horizontal controller Elevation controller
+
+     1 PC0 ----------> CCW (left) 5
+     2 PC1 ----------> CW (right) 2
+     3 PC2 ----------> DOWN 5
+     4 PC3 ----------> UP 2
+     8 PC7 ---------- BRAKE None None None
+
+   CN12 (ADC in)
+     1 ADC0 <---------- Azimuth sense (0-5V) 1
+     2 ADC1 <---------- Elevation sense (0-5V) 1
+     5 GND ----------- GND GND GND
+
+　Connection example 4 KENPRO KR-400 / 500
+
+    KR-400 and KR-500 are the same circuit. Controls sold by Kenpuro
+  　External connection is easily possible by combining with the adapter CX-500.
+    Inside, a relay for external control and an OP amplifier for angle detection are incorporated.
+
+       Controller Control Adapter　　　　　　　
+                              　CX-500
+       KR-400 terminal 　　　　　　　　　　　
+      　　Or 1 UP rotation　　　　　
+       KR-500 2 DOWN rotary motor
+　　　　　　　　　　　　　 　4 Angle detection
+                             5 GND
+
+　　　　　　　　　　　　　　　　　  - Four -
+
+2-3 Additional hardware when grouping as a stand-alone TrackBOX
+
+　When controlling TrakBox with the computer as the terminal mode, the above ante
+  Only the narrow datar interface is fine, but it works in standalone mode
+  The following work is required when putting together to make.
+
+
+2-3-1 Satellite selection SW
+　
+　1) When using rotary binary SW
+
+　8255 port B is used in input mode and bits 0 to 3 are used as rotary binary SW.
+     Connect 0-F (16 positions) or 1-10 (10 positions BCD)
+     You can also use the shift. Binary encoder SW has each terminal at position 0
+     You need an open type (a real type, not a complementary type).
+     Insert the 8255 port B pull-up resistor (RP3 47kx8).
+
+
+   CN9 (8255 port-B) Binary SW (real logic)
+     1 bit0 ----------- bit0 ^^^^^^^^^^
+     2 bit1 ----------- bit1
+     3 bit2 ----------- bit2
+     4 bit3 ----------- bit3
+     GND ----------- comon terminal
+
+
+　2) When using a volume (variable resistor)
+
+　It is also possible to select an analog satellite in VR without using a digital SW as the satellite selection SW.
+   I can do it. In that case, connect as follows.
+
+  CN9 (8255 port-B)
+    PB5 pin6 －－－－－－－－ GND
+
+  By dropping pin 6 to GND, satellite selection is AD converter from 8255 port B.
+   Switch to voltage to. The voltage between Vcc and GND is divided by VR, and the voltage is divided.
+   The pressure is read by the AD converter and the satellite is switched.
+
+
+　　　　　　　　　　　　　　　　　  - Five -
+
+　                                VR
+                 Vcc －－ / \ / \ / \ / \ / －－－－ GND
+                                   ^ ^
+    CN12 pin3 －－－－－－ ｜
+
+　VR is suitable for about 10k to 50k ohms. The state of turning all the way to the left is the digital SW
+    At 0, it is in the terminal mode, and when it is turned all the way to the right, the satellite No. 15 is selected
+     It corresponds to the voice.
+
+　3) When using a rotary switch and a resistor
+
+　Alternatively, assemble as follows with a 16-contact rotary SW and 16 1k ohm resistors.
+    You can also. Also in this case, connect CN-9 pin 6 to the ground.
+
+   Vcc---1k-1k--1k--1k--1k--1k--1k--1k--1k--1k--1k--1k--1k--1k--1k--1k- --- GND
+         | | | | | | | | | | | | | | | |
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+　　　 　　　　　　　　        ^ ^
+           　　　　　　　　　　  |
+       　　　　　　　　　　      + ---- CN12 pin3 (ADC2)
+
+2-3-2 LCD module connection diagram
+
+　Can be connected to most modules using Hitachi's LCD controller 44780
+    However, from the aspect of cost, it is coded to correspond to a module of 16 characters x 2 lines.
+    It has been.
+
+   CN8 (8255 port-A) LCD module (HITACHI 44780 compatible)
+
+     1 bit0 ----------- 7 DB0
+     2 bit1 ----------- 8 DB1
+     3 bit2 ----------- 9 DB2
+     4 bit3 ----------- 10 DB3
+     5 bit4 ----------- 11 DB4
+     6 bit5 ----------- 12 DB5
+     7 bit6 ----------- 13 DB6
+     8 bit7 ----------- 14 DB7
+
+　　　　　　　　　　　　　　　　　  ―― 6 ――
+
+　CN3 (8052 P1.0-7)
+     1 P1.0 ----------- 6 E
+     2 P1.1 ----------- 5 R / W
+     3 P1.2 ----------- 4 RS
+   Power
+     + 5V ----------- 2 Vdd *
+     GND ----------- 1 Vss
+     GND ----------- 3 Vcont.
+　　　　　　　　　　　　　　　* Be careful of polarity when using a flat cable
+
+2-3-3 LED connection
+
+
+   LED (AOS indicator)
+     CN5-6 (port-C-5) -------- (-) LED2 (+) ---- 500ohm ------ + 5V (CN5-10)
+
+　　When approaching AOS, it blinks at EL> -3.0 and antenna control S at EL> 2.0.
+        When W is ON, it will be in a continuous lighting state.
+
+
+
+2-3-4 Antenna control SW connection
+
+
+   CN9 (8255 port-B)
+     5 bit4 ------- SW ------- GND
+
+　When this SW is ON in standalone mode, "TracBox" turns the rotator.
+     Control While controlling the rotator, track in front of the satellite name on the LCD display
+     Ng mark (*,!, &) Is attached.
+
+2-4 Connection with wireless device
+
+　1) Frequency control compatible models
+　"TrakBox" is for the rigs of YAESU, KENWOOD, and ICOM.
+     Frequency control is possible. This sends a command from an external computer to the frequency of the rig
+     Use the remote function that can control the number and mode. This feature
+     It is called CAT system in YAESU and CI-V in ICOM.
+
+                                    ―― 7 ――
+　
+　　 The supported rigs are shown in Table 2-4. However, for YAESU and ICOM rigs
+     In order to connect, the modification described later in "VersaBoard-8052" in advance
+     You have to carry out the construction.
+
+
+　　　　　　Table 2-4 Corresponding RIG list
+
+　　　Manufacturer Model Remarks
+　
+　　KENWOOD TS-790
+　　　　　　　　　　　　　TS-711 / 811 Note 1
+　
+　　YAESU FT-736
+         　　　　　　　　 Other CAT registration TRX
+　
+　　　　　　　　　　　　　IC-970
+　　ICOM IC-375 Note 2
+　　　　　　　　　　　　　IC-275
+　　　　　　　　　　　　　Other CI-V compatible models
+　
+
+　　　Note 1) IF-10A / 10B is required
+　　　Note 2) CI-IV registered models IC-271, IC-371 are optional UX-
+                           Possible with 14
+
+
+　2) How to connect KENWOOD to a rig
+
+　You can connect directly to the KENWOOD rig from pin 2 of CN4.
+
+　　 　　 CN4
+      －－－－－－－－
+      2 LPT (TTL) -----------> To the computer control terminal of the KENWOOD rig
+      5 GND ----------- GND
+
+　Also, when using the RS232C interface IF-232C
+
+
+                                      ―― 8 ――
+
+　　　　　CN4
+　　　－－－－－－－－
+　　　1 LPT (232C) --------> To IF-232C
+　　　5 GND --------> GND
+
+　3) Connection method to YAESU / ICOM rig
+
+　　　First, the following modifications are required. This is KENWOO on the YAESU / ICOM rig
+            This is because the logic of the D rig and the signal are opposite, and it does not have to be inverted.
+
+　　  The output of pin 2 is inverted again by the inverter, and the surplus pin 3 of CN4
+          Take it out. The modified part is shown in the figure below.
+
+
+
+
+
+
+
+
+　　　　　                     Pattern surface diagram
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+　If the above modification is performed, pin 3 will become a terminal for YAESU / ICOM.
+　　 　　 CN4
+     －－－－－－－－
+     3 LPT (TTL) -----------> To the computer control terminal of the YAESU / ICOM rig
+     5 GND ----------- GND
+
+                                    ―― 9 ――
+
+　Also, when using the manufacturer's original RS232C interface, the above KE
+    Connect to CN4 pin 1 like NWOOD.
+
+　4) Connection for frequency tracking using microphone click
+
+　Even with rigs that do not have a remote function, the frequency can be increased to the microphone or accessory connector.
+      If the rig has a terminal that can control Down, frequency control is possible by clicking the microphone.
+       Noh.
+
+  CN12 (ADC)
+　4 ADC3 --- DC voltage of the discriminator of the receiver (9600 bps)
+                                     (For AFSK) TAPR modem PLL transition voltage
+　5 GND －－－－－ GND
+
+  CN9 (8255 port-B)
+　7 bit6 －－－－－－－ Modem lock signal (active low) or
+ 　　　 May be set to GND, but in this case, it may malfunction due to noise or the like.
+
+  CN5 (8255port-C)
+　5 bit4 －－－－－－－ Microphone click UP terminal (*)
+　7 bit6 －－－－－－－ Microphone click DOWN terminal (*)
+　9 GND －－－－－－－ GND
+
+ (*) In the case of TS-790, this connection works well. If click to lap
+　        If the wavenumber shifts in the opposite direction, swap UP and DOWN.
+ (*) In the YAESU receiver, the polarity of the pulse is reversed, so pull up to the outside.
+　　    Try changing the polarity with the menu 6-8 microphone click setting.
+　       when.
+
+  　　The input voltage to the ADC is divided by a resistor so that it becomes 2.5V ± (0.3 to 0.5V).
+　　　If it is insufficient, amplify it with an operational amplifier and supply it.
+
+
+
+
+
+
+
+                                   - Ten -
+
+2-5 Software installation
+
+ 　The separately sold "TracBox ROM" is burned to 27512 (64 kbytes EPROM).
+ 　It will be supplied in a crowded manner. This ROM is used by users of "VersaBoard-8052"
+     It is mounted on U9 (28 pins) as ROM. In addition, a jumper switch on the board
+     Is set as follows.
+
+　　□ "TracBox ROM" is mounted on U9 (note the orientation)
+
+　　　　　　　　　　　　　Jumper settings
+　　　　　　　　　　　　　　　　　　　　　
+  　　　Jumper number Function Jumper specification
+
+　　　　　□ JP1 AD15 line switching 1-2 (A15) Note 1　　
+　　　　　□ JP3 8052 ROM mode 2-3 (external)
+　　　　　　　　　　　　switching
+　　　　　□ JP7 short
+　　　　　□ JP12 8255 Port A 1-2 (output)
+            　　□ JP13 Battery backup Short circuit　
+　　　　　□ JP16 8255 Port B 2-3 (input)
+
+　            　□ No other jumpers are needed, so remove them.
+
+　Bridges BR1, BR2, BR4, BR5 are pre-patterned on the back side.
+   I will leave it as it is. However, BR4 is a rotator controller to connect.
+   It may be necessary to open it depending on the type of rar. (Relay at 5V or higher
+   If you are driving)
+
+   Note 1
+
+
+
+
+
+
+
+
+
+
+                                    --11 -
+
+
+2-6 How to use "TracBox" software
+
+　There are two types of "TracBox", terminal mode and standalone mode.
+ 　increase. Even if you try to use it in standalone mode, the built-in real-time data is initially available.
+ 　Terminal mode for locking calibration, inputting QTH information of own station and orbit information of satellite
+　Please raise it. To launch in terminal mode, first select the satellite on the panel surface.
+ 　Set the selection SW to position-0 and then reset. Reset to reset
+　Press the button or turn off the power and then turn it on again.
+
+     The default baud rate is set to 9600 baud.
+     Start the communication software on the terminal under the following conditions.
+
+　　　　　Communication speed 9600 baud (baud rate)
+　　　　　Data length 8 bits
+　　　　　No parity
+　　　　　Stop bit 1
+
+　When the power switch is turned on, if all connections and settings are correct, the terminal screen will be displayed.
+    You should see an initial menu like this:
+
+
+        ****************************************
+        * TrakBox 8052 V3.00 *
+        * (C) JAMSAT / JA6FTL Jan.15 1993 *
+        ****************************************
+
+        ------ MAIN MENU ------
+
+        1. Realtime Tracking.
+        2. Display Schedule.
+        3. Update Satellite Elements.
+        4. Update Station Elements.
+        5. Update Realtime Clock.
+        6. Configuration.
+        7. Host mode.
+        8. Direct Antenna control.
+
+        Select [1-8, S, M]:
+
+                                   ―― 12 ――
+　At this time, when the satellite selection SW position is 0 on the LCD display,
+
+        　TrakBox v3.00
+          (c) JAMSAT / JA6FTL
+
+  When the satellite selection SW is in a position other than 0, the above initial screen display appears for a moment.
+  Guni
+          12:30:20 UO-22
+          AZ 123.8 EL-12.5
+
+   Is displayed and you can see that it has started up safely. If not displayed, manual
+   Go back to the beginning and double-check the installation section.
+
+　All menus are in pull-down format, so key in the number of the desired menu
+   Then, it will move to the next menu. Key in Q to return to the previous menu screen
+    I will return.
+　Now, let's set the necessary items at the time of startup.
+
+2-6-1 Input of QTH information of own station (main menu 4)
+
+　First, enter the QTH information that is the basis of the calculation. Select menu 4 and call
+    Enter the in, longitude, latitude and altitude. This information will be added to the file as described below.
+ 　It can be set automatically by loading, but here it is a manual
+　I will try to enter it with.
+
+        Select [1-8, S, M]: 4
+
+        ========= Station Element ========
+
+        Callsign: JA6FTL <－－－ Callsign of your own station
+        Latitude: +35.000 <－－－ Latitude
+        Longitude: +135.000 <－－－ Enter the longitude (East longitude +, West longitude-)
+        Antenna height: 100.00 <－－－ Antenna height (meters)
+        Rotor start (S / N): South <－－－ The starting point of the horizontal rotor (N or S)
+        COM port baud: 9600 <－－－ Communication baud rate with the terminal
+　　　　　　　　　　　　　　　　　　　　　1200, 2400, 4800 and
+      It corresponds to 9600. It will be enabled after reset.
+　  If you enter the QTH information of your station to the end, it will automatically return to the main menu.
+
+                                   - 13 -
+
+2-6-2 Real-time clock calibration (main menu 5)
+
+　Then select menu 5 to calibrate the real-time clock. Current time is U
+    Convert to TC and enter accurately in seconds. NTT's time signal service is accurate and easy, isn't it?
+    cormorant.
+
+         Select: 5 <－－－ Select 5 in the main menu
+
+       Enter'Y' for zero sec. adjustment
+  Enter'Ret' for Real Time Clock set
+
+  Present Time: UTC 1992/03/04 15:41:54 ＜ －－－ The current time is displayed.
+
+
+　If you only need to set the second to 0, add Y, and if you want to correct the time, add a line break.
+
+　　Then the screen will change as follows.
+
+
+　　Set realtime Clock.
+　　Present Time: UTC 1991/10/00 22:04:32
+　　Enter with format [YY / MM / DD HH: MM: SS] 92/03/04 15:45:00 <－－－ Input
+　　Set time: 1992/03/04 15:45:00 If you omit 19 in the year and enter only the last two digits of the Christian era
+                                      It's good.
+　　'ENTER' when ready. ＜ －－－ Waiting in this state.
+                             Start timing by breaking a line while listening to the time signal.
+
+
+2-6-3 Update of orbital elements (Main Menu 3)
+
+        Select [1-8, S, M]: 3
+
+           ========= UPDATE MENU ========
+        1. EDIT: View / Edit satellite Elements by hand.
+        2. SELECT: Select Satellite for list.
+        3. UPDATE: Clear database & read in new Elements.
+        4. MULTI TRACK: Configure multi tracking sat. Number.
+
+                                   - 14 -
+　Submenu 1 (EDIT) is used to manually enter or change the orbital elements.
+　Submenu 3 (UPDATE) reads the orbital elements of the satellite all at once.
+　It is used when you want to (called upload). Submenu 2 (SELEC
+    T) selects a satellite from the satellites whose orbital elements have been uploaded using submenu 3.
+　It is used to select the 15 satellites to be assigned to the SW.
+
+　Then, using UPDATE of submenu 3, AMSAT format or NA
+　Let's upload the satellite orbital elements in SA format. First AMSAT
+　Formats and NASA formats are as follows.
+
+
+　　　　AMSAT format
+
+　　　Satellite: FO-20
+　　　Catalog number: 20480
+　　　Epoch time: 92054.36154364
+　　　Element set: 294
+　　　Inclination: 99.0640 deg
+　　　RA of node: 354.2565 deg
+　　　Eccentricity: 0.0541054
+　　　Arg of perigee: 92.6976 deg
+　　　Mean anomaly: 273.6148 deg
+　　　Mean motion: 12.83202648 rev / day
+　　　Decay rate: 2.40e-07 rev / day ^ 2
+　　　Epoch rev: 9577
+
+
+　　　　NASA format
+
+　FO-20
+　1 20480U 90013 C 92054.36154364 0.00000024 10561-3 0 2948
+　2 20480 99.0640 354.2565 0541054 92.6976 273.6148 12.83202648 95777
+
+
+　The above example expresses the same orbital elements for "Fuji 2 (JAS-1b)".
+　The NASA format is shorter. Because it is represented by two lines per satellite
+　Sometimes called a two-line format.
+
+
+                                   ―― 15 ――
+　　　　Before selecting submenu 3, first prepare the orbital element file and its format is
+　Please make sure that it belongs to you. Prepare the latest orbital element file below
+　when. There are NASA format and AMSAT format. The satellite orbit
+　New element files are announced every week, and JDB (JAMSAT Data)
+　It can be obtained from Base) and packet BBS. NASA at JAMSAT
+　The format is recommended because of the amount of traffic.
+
+　　　　Now, select submenu 3 to upload the orbital element file.
+
+        Select [1-8, S, M]: 3
+
+           ========= UPDATE MENU ========
+        1. EDIT: View / Edit satellite Elements by hand.
+        2. SELECT: Select Satellite for list.
+        3. UPDATE: Clear database & read in new Elements.
+        4. MULTI TRACK: Configure multi tracking sat. Number.
+
+          Select: 3 [Retern] <－－－ Select submenu 3
+
+　File format NASA / AMSAT (N / A): N <－－－ The file to be uploaded is N
+　You will be asked if it is an ASA format or an AMSAT feemat, so answer with N or A.
+　increase.
+
+　Upload data file. (EOF: ctrl + Z) ＜ －－－ When this line is displayed, from the terminal
+　Upload the orbital element file. BASIC program for initial operation test
+　It is exactly the same as the procedure for loading the software.
+
+
+　AO-10
+　1 14129U 83 58 B 92365.61164878 -.00000082 00000-0 99998-4 0 9558
+　2 14129 27.0174 46.9353 6015488 45.5070 350.3508 2.05880840 71796
+　UO-11
+　1 14781U 84 21 B 93006.10837104 .00000637 00000-0 11709-3 0 3933
+　2 14781
+　..
+　..
+　.. Omitted on the way
+
+
+                                   ―― 16 ――
+
+　NOAA-9
+　1 15427U 84123 A 93006.04962885 .00000170 00000-0 11115-3 0 2642
+　2 15427 99.1233 43.2697 0014242 265.8655 94.0883 14.13472925415874
+
+　After sending to the end, input ctrl-Z from the terminal to complete the reading and "Tra"
+　In "kbox", we will start organizing the database. At this time, the following is displayed.
+　vinegar. In this example, the orbital elements of 20 satellites are read, so it is from # 1 to # 20.
+　increase.
+　NASA> # 1 AO-10
+　NASA> # 2 UO-11
+　NASA> # 3 RS-10 / 11
+　NASA> # 4 AO-13B
+　NASA> # 5 AO-13L
+　NASA> # 6 AO-13S
+　NASA> # 7 FO-20A
+　NASA> # 8 FO-20B
+　NASA> # 9 AO-21
+　NASA> # 10 RS-12 / 13
+　NASA> # 11 UO-14
+　NASA> # 12 AO-16
+　NASA> # 13 DO-17
+　NASA> # 14 WO-18
+　NASA> # 15 LO-19
+　NASA> # 16 UO-22A
+　NASA> # 17 UO-22B
+　NASA> # 18 KO-23B
+　NASA> # 19 KO-23A
+　NASA> # 20 NOAA-9
+
+
+　After this, we will upload information files such as the frequency and mode of each satellite. (centre
+　The format of the file will be described later.) If you do not upload, is it a terminal?
+　Enter Ctrl-Z.
+
+        Upload freq / mode data file. (EOF: ctrl + Z)
+
+　UO-22A 435.120 145.900 fm fm cat no
+　UO-22B 435.120 145.975 fm fm cat no
+
+                                   ―― 17 ――
+
+　KO-23A 435.163 145.850 fm fm cat no
+　AO-21 145.987 435.016 fm fm mic no
+　AO-13B 145.900 435.500 usb lsb mic ma
+　AO-16 437.025 145.940 usb fm mic no
+　DO-17 145.825 435.000 fm none cat no
+　435.000 is dummy
+　WO-18 435.075 145.000 usb none cat no
+　LO-19 437.125 145.840 usb fm mic no
+　FO-20A 435.910 145.850 usb fm cat no
+　FO-20B 435.910 145.870 usb fm cat no
+　AO-13L 435.850 144.500 usb lsb mic ma
+　AO-13S 2400.730 / -1256.000 435.620 usb lsb mic ma
+　AO-10 145.900 435.100 usb lsb mic ma
+　STS-47 145.550 435.000 fm fm cat no
+　KO-23B 435.163 145.900 fm fm cat no
+
+　　　 Enter Ctrl-Z
+
+　Then, among the 20 satellite information uploaded earlier, this information file was written.
+　Up to 15 satellites are assigned to the selection SW and additional information about each satellite is added at the same time.
+　Will be written.
+
+　Satellite (UO-22A) updated and selected as # 1
+　Satellite (UO-22B) updated and selected as # 2
+　Satellite (KO-23A) updated and selected as # 3
+　Satellite (AO-21) updated and selected as # 4
+　Satellite (AO-13B) updated and selected as # 5
+　Satellite (AO-16) updated and selected as # 6
+　Satellite (DO-17) updated and selected as # 7
+　Satellite (WO-18) updated and selected as # 8
+　Satellite (LO-19) updated and selected as # 9
+　Satellite (FO-20A) updated and selected as # 10
+　Satellite (FO-20B) updated and selected as # 11
+　Satellite (AO-13L) updated and selected as # 12
+　Satellite (AO-13S) updated and selected as # 13
+　Satellite (AO-10) updated and selected as # 14
+　Satellite (KO-23B) updated and selected as # 15
+
+
+                                   --18 -
+　In this way, up to 15 satellites can be automatically assigned. Also
+　Submenu-2 is used to manually assign satellites. In this case Ret
+　If you enter only the ur key, the subsequent allocation will be canceled and you will return to the submenu.
+
+    ========= UPDATE MENU ========
+    1. EDIT: View / Edit satellite Elements by hand.
+    2. SELECT: Add to calculation table.
+    3. UPDATE: Clear database & read in new Elements.
+
+　Submenu 1 manually inputs orbital elements and modifies already entered data.
+　I use it to For example, the work of modifying the frequency information to calculate the Doppler correction
+　Let's try.
+          Select: 1 <－－－ Select submenu 1
+
+　        *** Select object satellite ***
+ 　1. * UO-22A 2. UO-22B 3. KO-23A 4. AO-21
+ 　5. AO-13B 6. AO-16 7. DO-17 8. WO-18
+ 　9. LO-19 10. FO-20A 11. FO-20B 12. AO-13L
+　13. AO-13S 14. AO-10
+　
+  　      Select: 1 <－－－ Select satellite 1
+
+  　              ====== Satellite data ======
+  　        Satellite: UO-22A
+  　        Epoch Year Y0: 93 Y0: Items that do not need to be corrected
+　  Just return.
+　          Epoch Time T0: 3.75719 T0:
+            Epoch Rev K0: 7705 K0:
+       　   Mean Anomaly M0: 291.65860 M0:
+        　  Mean Motion N0: 14.36760 N0:
+        　  Inclination I0: 98.48989 I0:
+          　Eccentricity E0: 0.00085 E0:
+         　 Arg perigee W0: 68.55100 W0:
+               RAAN O0: 82.39630 O0:
+              Decay N1: 2.600000e-06 N1:
+              Downlink Frq.F1: 435.120 F1:
+              Offset for F1: 0.000 F1OFFSET:
+              Uplink Frq.F2: 145.900 F2: 145.975 Input
+
+                                   ―― 19 ――
+
+             Offset for F2: 0.000 F2OFFSET:
+             Downlink mode: FM
+             Uplink mode: FM
+             Doppler correct .: CAT
+             LCD MA display: No
+
+  　 This section describes additional information.
+  　 Downlink Freq. F1: Downlink frequency from satellite 1kHz
+      Enter exactly up to the unit of. Doppler correction function works when 0 (zero) is input.
+      not.
+  　 Offset Frq. F1: Converter when using a down converter for reception
+       This is the local oscillator frequency. For example, the mode S of AO-13 is received by the parent of 144 MHz.
+   　When receiving with a machine, set this value to -2256.00 to correct Doppler.
+　　The received reception frequency is converted to the 144MHz band and a CAT command is issued. (CA
+　　T will be described later)
+　　Uplink Frq. F2: Uplink frequency for the satellite. 1 kHz
+　　Enter exactly up to the unit.
+　　Offset for F2: Local oscillator frequency when using upverter for transmission
+　　is. Sends the Doppler-corrected transmission frequency to the parent transmitter as well as the reception.
+　　Downlink and Uplink mode: FM, USB, LSB, No.
+　　You can specify ne. When None is specified, the mode setting CAT frame
+　　No issue will be issued. Only one initial letter (F, U, L, N) is accepted.
+　　Doppler collect. : CA for Doppler frequency correction for receiver
+　　Specify whether to use T or click the microphone. CAT, MIC and None
+　　You can specify it. Only one initial letter (C, M, N) is accepted.
+　　LCD MA display: Whether to display the phase value of the satellite on the LCD
+　　Is specified. If Yes is specified, the phase value will be displayed. AO-13 operation
+　　Sometimes useful.
+　　When the input for one satellite is completed, the submenu screen will be displayed as follows.
+
+　           ========= UPDATE MENU ========
+  　      1. EDIT: View / Edit satellite Elements by hand.
+   　     2. SELECT: Select Satellite for list.
+    　    3. UPDATE: Clear database & read in new Elements.
+     　   4. MULTI TRACK: Configure multi tracking sat. Number.
+
+       　   Select: _
+
+
+                                   ―― 20 ――
+　　Submenu 4 specifies the number of satellites to be calculated and displayed at the same time during multi-tracking.
+　　Thing. 2-5 can be specified. (See below for multi-tracking).
+        The default value is 3.
+
+　　If you enter Q here, you will return to the main menu.
+
+        　  Select: Q
+
+    　    ****************************************
+     　   * TrakBox 8052 V3.00 *
+      　  * (C) JAMSAT / JA6FTL Jan.15 1993 *
+      　  ****************************************
+
+      　  ------ MAIN MENU ------
+
+       　 1. Realtime Tracking.
+    　    2. Display Schedule.
+    　    3. Update Satellite Elements.
+     　   4. Update Station Elements.
+ 　       5. Update Realtime Clock.
+   　     6. Configuration.
+     　   7. Host mode.
+    　    8. Direct Antenna control.
+
+  　      Select [1-8, S, M]:
+
+
+2-6-4 Schedule display (main menu 2)
+
+　Select 2 from the main menu to calculate and display the position of one satellite.
+　increase. You can know when a satellite will be visible next time and so on. path
+　It takes a long time between and the pass, but when you key in Q
+　But you can get through the top menu.
+
+      　  ------ MAIN MENU ------
+
+    　    1. Realtime Tracking.
+     　   2. Display Schedule.
+
+                                   - twenty one -
+
+            3. Update Satellite Elements.
+     　   4. Update Station Elements.
+      　  5. Update Realtime Clock.
+      　  6. Configuration.
+       　 7. Host mode.
+      　  8. Direct Antenna control.
+
+     　     Select: 2 <－－－ Select main menu 2
+
+　　A list of satellites will be displayed, so select it.
+
+　*** Select tracking satellite ***
+
+ 　1. * AO-10 2. RS-10 / 11 3. UO-11 4. RS-12 / 13 5. AO-13
+　 6. UO-14 7. AO-16 8. DO-17 9. WO-18 10. LO-19
+　11. FO-20 12. AO-21 13. UO-22 14. Mir 15. STS 45
+
+　　　　　　Select: 11 <－－－ No. Select 11 FO-20.
+
+　1992/03/04 15:53:23
+　Starting Day / Time? [YY / MM / DD HH: MM: SS] <－－－ Total starting from the current time
+　If you want to calculate, just enter the return key.
+　Day of the Year [T]> 64.66207
+　Time Step.
+　　　　　　　　　　　　　　　　Specifies the time interval for calculations.
+　Min: 1 <--- Enter the minute unit Here, 1
+
+　Sec: 0 <--- Enter seconds 0 here
+
+  　 DATE TIME AZ / EL Doppler
+　1992/03/04 16:13:35 13.8 / 2.8 435.929
+　1992/03/04 16:14:35 14.1 / 7.1 435.929
+　1992/03/04 16:15:35 14.7 / 12.7 435.930
+　1992/03/04 16:16:35 15.2 / 18.8 435.928
+　1992/03/04 16:17:35 15.8 / 26.4 435.927
+　1992/03/04 16:18:35 16.8 / 36.3 435.925
+　1992/03/04 16:19:35 18.4 / 49.4 435.923
+　1992/03/04 16:20:35 22.5 / 66.4 435.919
+
+                                   - twenty two -
+　1992/03/04 16:21:35 64.1 / 85.4 435.913
+　1992/03/04 16:22:35 183.2 / 72.4 435.907
+　1992/03/04 16:23:35 189.4 / 54.1 435.900
+　1992/03/04 16:24:35 191.3 / 41.7 435.897
+　1992/03/04 16:25:35 192.3 / 32.3 435.895
+　1992/03/04 16:26:35 192.9 / 25.1 435.893
+　1992/03/04 16:27:35 193.4 / 19.2 435.893
+　1992/03/04 16:28:35 193.8 / 14.4 435.892
+　1992/03/04 16:29:35 194.1 / 10.2 435.892
+　1992/03/04 16:30:35 194.3 / 6.5 435.892
+　1992/03/04 16:31:35 194.5 / 2.9 435.890
+　---'Q' for abort'S' for scrol --- Q <--- You can interrupt at any time with Q.
+
+     After interrupting, you will be returned to the submenu. If you enter S, it will be displayed continuously and some key
+     Continue until you are in.
+
+2-6-5 Configuration (Main Menu 6)
+
+　Select the main menu 6 to configure various configurations. Next submenu
+　Move to.
+
+  　      Select [1-8, S, M]: 6 <－－－ Select 6
+
+    　    ======= Configuration Menu ======
+     　   0. Display all configured values
+      　  1. Calibration of antenna span value
+      　  2. Set ADC span value
+     　   3. Set Dead Band and Skew value
+     　   4. Set antenna Parking and Limit position
+     　   5. Monitor ADC value & Antenna position
+     　   6. Direct antenna control
+    　    7. Radio CAT port configuration
+    　    8. Mic-click configuration
+     　   9. Set default parameter
+
+　　　　          Select: _
+
+
+
+                                   - twenty three -
+
+　　1) Submenu 0
+
+　　Submenu 0 shows the current configuration status.
+
+  　        Select: 0 <--- Select submenu 0
+
+　　　　The current setting status is displayed as follows.
+
+
+      　  Callsign: NOCALL Lat: 35.0 Long: 135.0 Height: 100.0
+     　   ADC span value AZ: 1 --837 EL: 1 --440
+     　   Dead band AZ: 3.0 EL: 1.0
+      　  Skew AZ: 0.0 EL: 0.0
+      　  Antenna parking Off
+      　  Rotator limit Off
+     　   Priority tracking On
+      　  CAT Rig KENWOOD Full
+      　  Step control ADC value Center: 550 Reff: 560
+      　  Frequency step size: 100Hz
+      　  Rotor start South
+      　  COM port 9600 Baud 8-N-1
+
+     　           Press any key to continue
+
+　　In order to properly control the antenna and track the satellite, these items are properly configured.
+　　Must be regulated. Submenus 1 to 6 are ante
+　　This is an item related to control in the direction.
+
+
+　2) Submenu 1
+
+
+　First, select submenu 1 and calibrate the antenna orientation.
+　Here, the starting point of the rotor is in the main menu 4 (where you enter the QTH information of your own station).
+　Will proceed as if it were set in the south. In other words, the directional rotator turns counterclockwise.
+　The antenna is positioned so that it faces southward at the cut-off position.
+
+　　　  　        Select: 1 <--- Select 1.
+
+                                   - twenty four -
+
+        ADC span value AZ: 0006 --886 EL: 0002 --0465 <－－－ Current setting
+　　The value is displayed.
+
+　　Rotate the antenna to fully CCW and Elevation minimum position [Y / N]? Y
+
+　I am waiting for a Y / N answer. So, first, turn the directional rotator counterclockwise.
+　Turn it all the way around, then manually rotate the elevation rotator so that it is in the horizontal position.
+　Operate the controller and enter Y. At this time, "TracBox" is horizontal.
+　The voltage indicating the angle of the rotator of the elevation angle is read by the AD converter.
+
+
+　　Rotate the antenna to fully CW and Elevation maximum position [Y / N]? Y
+
+　Next, the position where the directional rotator is turned in the opposite direction and turned all the way clockwise, the elevation angle rotator is
+　Set it in the vertical position and enter Y. At this time as well, "TrakBox" is low.
+　The voltage from the data controller is read by the AD converter. Now rotate
+　The rotation angle detection voltage from the ter and the lead-out value of the AD converter are calibrated.
+　It will be. Please check with submenu 0.
+　Since the AD converter of "VersaBorder-8052" is 10 bits, it is 0 to 1.
+　Count between 023. Disassembled when voltage 5V is output when the rotation angle is maximum
+　Noh is the best. If there is a voltage adjustment VR on the controller side, it exceeds 5V.
+　Adjust so that the maximum voltage is output within the range. Also caliber
+　When the ration is over, check the Min / Max values ​​of the azimuth and elevation angle in submenu 0, and check the Min / Max values.
+　You should make a note of it.
+　　In submenu 5, the antenna position (azimuth, elevation) and ADC lead-out value are displayed.
+　Since you can manually move the antenna, the displayed value and the controller
+　Make sure that the values ​​on the display panel match.
+
+　3) Submenu 2
+
+　You can enter the ADC value in submenu 2, but change it to the ADC value obtained in 1) above.
+　Can be set directly when required.
+
+　4) Submenu 3
+
+     Submenu 3 sets the deadband value and skew value. What is a dead band?
+　It is the allowable range of azimuth and elevation error. Inertia depending on the type of rotator and antenna
+　Therefore, even if the power of the motor is turned off, it does not stop immediately, but stops when it goes a little too far.
+
+                                   - twenty five -
+
+　To do. In other words, it is necessary to turn off the motor just before the target value. This value
+　If is too small, the rotator will not be able to stop and will be in a hunting state.
+　Try moving it and set it to the optimum value. The initial value is 3 degrees in the horizontal direction and 1 elevation angle.
+　Although it is a degree, it can be changed as follows.
+
+          Select: 3 <－－－ Select submenu 3
+
+        Azimuth Dead Band: 3.0 <－－－
+        Elevation Dead Band: 1.0 <－－－
+
+
+　The skew value is the correction value for azimuth and elevation. Enter with plus + and minus- (angle)
+　Please. The initial value is 0.
+
+        Azimuth Skew value: 0.0 <－－－
+        Elevation Skew value: 0.0 <－－－
+
+
+　5) Submenu 4
+
+　Submenu 4 is a function to point the antenna in the specified direction when not tracking.
+　(Parking function) and function to limit the movable range of the antenna (rotator limit)
+    Set up.
+
+                  Select: 4
+
+        Set Antenna Parking position? [Y / N] y <－－－ Enter Y
+
+        Azimuth Parking value: 0.0 220 <－－－ Enter the horizontal azimuth
+        Elevation Parking value: 0.0 0 <－－－ Enter the vertical angle
+
+        Set Antenna rotation limit? [Y / N] y <－－－ Enter Y
+
+        Azimuth minmum value: 0.0 300 <－－－ Enter the minimum value
+        Azimuth maximum value: 360.0 60 <－－－ Enter the maximum value
+        Elevation minmum value: 0.0 0 <－－－ Enter the minimum value
+        Elevation maximum value: 90.0 45 <－－－ Enter the maximum value
+
+
+                                   --26 -
+
+　If you do not need this feature, enter N.
+　The parking function has an elevation value of -3.0 or less after LOS during tracking.
+　It will work. It will not operate if the tracking switch is OFF.
+　Here, the minimum value of the horizontal value of the antenna limit is the limit value of counterclockwise rotation, and the maximum value is the clock.
+　This is the limit value for directional rotation. Therefore, in the case of a rotator originating from the north, it is the minimum as in the above example.
+     Value> maximum value.
+
+　6) Submenu 5
+
+　Submenu 5 is a monitor for the reading value of the AD converter and the antenna direction. manual
+　If you move the rotator with, the value will change, so make sure that it matches the actual direction.
+　Put.
+                  Select: 5 <－－－ Select submenu 5
+
+        === ADC value & Antenna position ===
+
+        AZ = 519 / 32.8deg EL = 462 / 90.0deg.
+
+　7) Submenu 6
+
+　Submenu 6 controls the antenna directly from the keyboard.
+
+
+                  Select: 6
+
+        1.Direct rotor control from key board.
+        2.Enter direction value.
+        3. Preset Control.
+
+　Menu 1 controls the horizontal and vertical rotators ON / OFF directly from the keyboard.
+　Keyboard assignments are 4: left, 6: right, 2: down, 8: up. 5
+　It is a stop. Enter Q to return to the previous menu.
+
+        Select [1-3, Q]: 1 <--- Enter 1
+
+        Left (4), Right (6), Up (8), Dwn (2), Stop (5) or Ret.
+
+        AZ = 706 / 124.0deg EL = 3 / 0.6deg.
+
+                                   --27 -
+
+　The current value of the antenna is displayed on the display and LCD.
+
+　For menu 2, enter the target value from the keyboard.
+
+        1.Direct rotor control from key board.
+        2.Enter direction value.
+        3. Preset Control.
+
+        Select [1-3, Q]: 2 <－－－ Enter 2
+
+        Azimuth: 180.8 220
+
+        Elevation: -43.4 0
+
+        AZ = 706 / 124.0deg EL = 3 / 0.6deg.
+　
+　The current value of the antenna is displayed on the display and LCD. Antenna reaches target value
+　If you are keyed in, you will return to the previous menu.
+
+　Menu 3 can set 5 directions with the preset control of the antenna.
+
+        1.Direct rotor control from key board.
+        2.Enter direction value.
+        3. Preset Control.
+
+        Select [1-3, Q]: 3 <－－－ Enter 3
+
+        1: 0.0 / 0.0 2: 0.0 / 0.0 3: 0.0 / 0.0 4: 0.0 / 0.0 5: 0.0 / 0.0
+
+        Select [1-5, S, Q]: s <－－－ Enter S to set the direction
+        Preset position 1 Az: 0.0 220
+                           El: 0.0 0
+
+        Preset position 2 Az: 0.0 300
+                           El: 0.0 0
+
+        Preset position 3 Az: 0.0
+                           El: 0.0
+
+                                   --28 -
+
+        Preset position 4 Az: 0.0
+                           El: 0.0
+
+        Preset position 5 Az: 0.0
+                           El: 0.0
+
+
+        1: 220.0 / 0.0 2: 300.0 / 0.0 3: 0.0 / 0.0 4: 0.0 / 0.0 5: 0.0 / 0.0
+
+        Select [1-5, S, Q]: Q <－－－ Q returns to the previous menu.
+　
+　Enter 1-5 to start the control in the selected direction. Something on the way
+　When keyed in, control is interrupted and returns to the previous menu.
+
+
+　8) Submenu 7
+
+　Submenu 7 is a command to control the frequency for the rig from "TracBox".
+　Make settings for the function to send. See Table 2-4 for models that can use this function.
+    when. Also, about the connection between the "TracBox" and the rig required to use this function.
+    Please see page 8.
+
+  　      ======= Configuration Menu ======
+    　    0. Display all configured values
+     　   1. Calibration of antenna span value
+     　   2. Set ADC span value
+    　    3. Set Dead Band and Skew value
+   　     4. Set antenna Parking and Limit position
+  　      5. Monitor ADC value & Antenna position
+  　      6. Direct antenna control
+  　      7. Radio CAT port configuration
+  　      8. Mic-click configuration
+　        9. Set default parameter
+
+　　　　          Select: 7 <--- Select 7
+
+        CAT Rig KENWOOD, YAESU, ICOM (K / Y / I)? Y
+        Uplink Doppler correction? [Y / N] Y
+
+                                   --29 -
+
+        Downlink Doppler correction? [Y / N] Y
+        Is the CAT RIG FT-736? [Y / N] n
+        Select Full orbit or AOS CAT control (F / A)? A
+
+
+　CAT Rig KENWOOD, YAESU, ICOM (K / Y / I)? Y <－－－ Answer the manufacturer name of the rig.
+　In the case of YAESU, whether the rig is FT-736 or in the case of FT-736, FM-
+　You will be asked if you want to select the narrow filter option. FM narrow option here
+　Incorporates a filter with a wide pass band into the FM narrow position when receiving UO-22.
+　This is useful for selecting this filter with the CAT command.
+
+　Enter destination Address (00) <--- Only when ICOM is selected, it is decided for each rig.
+    You will be asked for the correct address, so set it according to the model. Ad for each rig
+    The less is set as follows by default (factory default). However, set it to address 00
+     Any rig should accept commands from "TracBox".
+　　　                   　　　Model address
+　　　                   　　
+　　　                   　　IC-970 2E
+　　　                   　　IC-375 14
+　　　                   　　IC-275 10
+
+　Also, issue the CAT command over full orbit or only at the time of AOS.
+　I will ask you, so I will answer with F / A.
+　
+　The communication speed between "TracBox" and the rig is as follows if the manufacturer is selected.
+　Is set to
+
+　　　　　　　Manufacturer speed (Bo)
+　　　　　
+　　　　　　Kenwood 4800
+　　　　　　　YAESU 4800
+　　　　　　　　ICOM 1200
+
+　Both of these speeds are in line with the standard rig settings. Inside the rig for ICOM machines
+　You can change both the address and communication speed by changing the DIP switch of.
+　If you change it, it will not match the setting of "TracBox".
+
+
+                                   --30 -
+
+　9) Submenu 8
+
+　　In submenu 8
+
+　By using this function, you can use a rig that does not have an interface such as a CAT system.
+　Even if there is, the frequency is up / down from the microphone jack terminal or the accessory terminal.
+　If the rig can control n, the downlink frequency of the satellite by Doppler shift
+　You can follow the transition. The connection to achieve that is explained in 3-4.
+　I am clear.
+　Whether to use this function or perform CAT control can be selected for each satellite.
+　is.
+
+  　      ======= Configuration Menu ======
+   　     0. Display all configured values
+   　     1. Calibration of antenna span value
+   　     2. Set ADC span value
+   　     3. Set Dead Band and Skew value
+   　     4. Set antenna Parking and Limit position
+   　     5. Monitor ADC value & Antenna position
+   　     6. Direct antenna control
+    　    7. Radio CAT port configuration
+    　    8. Mic-click configuration
+    　    9. Set default parameter
+
+　　　　          Select: 8 <--- Select 8
+
+  　      This menu configures ADC value for the mic-click control
+
+  　      Set new value or Measure ADC value? [S / M] m
+   　     Tune RX frequency to modem locked popsition [Y / N]
+
+   　             ADC value = 427/1023 ADC value = 427/1023
+
+　　To use this function for the first time, first measure the input value to the ADC when the reception frequency is tuned.
+ 　Must be determined. Now the modem locks on the received signal after keying in M
+　Adjust the dial and key in Y. At this time, the ADC value is displayed on the display.
+　Will be done.
+
+                                   --31 -
+
+        Push mic-click button two times [Y / N]
+
+                ADC value = 427/1023 ADC value = 428/1023
+
+　Then push the microphone click button twice (that is, double the frequency step)
+　To adjust). Then key in Y.
+　This completes the configuration of the microphone click function of TrackBox.
+　If it exceeds this ADC range, an up or down signal will be generated. At menu 0
+　It is a good idea to check the ADC value and make a note of it.
+
+
+        Enter Step frequency [Hz]: 100 <-1
+        Frequency set CAT command at AOS? [Y / N] y <-2
+        Automatic up pulse generation at AOS? [Y / N] y <-3
+        Porlarity of step pulse, Normal / Reverse? [N / R] n <-4
+
+　　Each item is explained.
+　1 step frequency The frequency step width when the microphone is clicked.
+　2 CAT at AOS Microphone click frequency control selected
+       Specifies whether to issue the frequency setting CAT command at the time of AOS.
+      If Yes, the C of the reception frequency setting that is Doppler frequency corrected during AOS
+      An AT command is issued.
+　3 Automatic up pulse Difference from the reception frequency at the previous LOS during AOS
+　　　And the number of up pulses is calculated from the frequency step, which is the setting of this function. Ye
+　　　When it is set to s, the frequency of the receiver is automatically set from the frequency at the time of the previous LOS at the time of AOS.
+　　　It can be raised to the frequency at the time of AOS, and even with the microphone click method, it can be passed several times.
+　　　Automatic operation will be possible over the course. At this time, the display shows the following pal
+　　　The frequency and frequency are displayed and you can check the operation.
+
+　   fdx / f_diff / pulse: 435.120000/9772/97
+  　 UP pulse: * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * ............
+
+
+　4 Pulse polarity Determines the polarity of Mike Quick Pulse. N (normal) is a
+　　　KENWOOD at the active ground (which reaches the GND level when the pulse is output)
+　　　The rig corresponds to this. Also, during R (reverse), the output terminal is active when active.
+　　　Since it will be in a float state, attach a pull-up resistor (10K ohm) to the outside.
+　　　It corresponds to the rig of YAESU.
+
+                                   --32 -
+
+　When these items are entered, you will automatically be returned to the main menu.
+
+
+　　======= Configuration Menu ======
+　　0. Display all configured value
+　　1. Calibration of antenna span value
+　　2. Set ADC span value
+　　3. Set Dead Band
+　　4. Set Skew value
+　　5. Monitor ADC value & Antenna position
+　　6. Direct antenna control
+　　7. Radio CAT port configuration
+　　8. Mic click configuration
+　　9. Set default parameter.
+
+ 　　         Select: _
+
+
+
+　10) Submenu 9
+
+　Submenu 9 erases the contents of RAM and sets various parameters in advance in ROM.
+　Initializes to the value written inside. Calibrated ADC and other values
+　Please note that all the data of the orbital elements will also disappear. A horn sounds at the time of execution
+　increase.
+　Execute it when the program behaves strangely or after a runaway.
+
+
+　Station after the RAM contents are cleared and the default value in ROM is set
+　You will be asked if you want to upload information, so your information (latitude, longitude, etc.)
+　Upload the file in which you wrote. (The format will be described later).
+    It ends with Ctrl-Z.
+
+2-6-6 Real-time tracking (main menu 1)
+
+　After completing all the settings up to this point, the satellite will be automatically tracked in terminal mode (Ante).
+　Azimuth and elevation control and rig frequency control) are possible.
+
+
+                                   --33 -
+
+  　      *** Tracking object satellite ***
+
+ 　1. * UO-22A 2. UO-22B 3. KO-23A 4. AO-21
+ 　5. AO-13B 6. AO-16 7. DO-17 8. WO-18
+　 9. LO-19 10. FO-20A 11. FO-20B 12. AO-13L
+　13. AO-13S 14. AO-10
+
+　        Select: 1 <－－－ Try to select UO-22
+
+  　      Satellite UO-22A selected
+
+         ========== Realtime Tracking [1993/01/17] =========
+
+  'E' Toggle rotor control'Y' RTC zero adjust'Q' Return to main menu
+  '+/-/ 0'Doppler compensation
+     [Satellite: UO-22A]
+     UTC Azim. Elev. Range Alt. Lat. Long. Phase Doppler
+  HH: MM: SS deg deg Km Km deg deg <256> Hz
+  01:40:41 7.73 -39.79 9278.0 763.9 57.7 -59.5 21.1 +7469
+
+　The position of the satellite is calculated every moment and displayed line by line. AO when the elevation angle is -3.0 or higher
+　The S LED starts blinking and reaches -2.0, and the control SW ("E" key) is turned on.
+　Then, "TracBox" controls the rotator to track the satellite. control
+　Le SW is toggled and the rotator control is stopped by inputting E again. Ante
+　Tracking mark (*,!, &: Tracking mode) on the left side of the time display while controlling
+　(Changes depending on the mode) appears. Also, a mark is displayed in front of the satellite name on the liquid crystal display.
+　And indicates that it is being tracked.
+
+          15:51:33 * FO-20
+          AZ 20.8 EL 50.2
+
+　　Commands that can be entered during real-time tracking
+　E: Antenna control ON / OFF (toggle)
+　Y: 0 second correction RTC is corrected to 00 seconds by inputting Y from the keyboard at any time.
+　　　can.
+　+/-/ 0: From the keyboard when performing Doppler correction with CAT control
+　By inputting + (plus) or- (minus), 200Hz in FM mode,
+　The 100Hz frequency can be positively or negatively corrected in SSB mode.
+
+                                   --34 -
+　
+  The frequency moves according to the number of inputs. At this time, the display frequency on the display (above)
+　The example +7469) does not change. If you key in 0 (zero), the original frequency will also be restored.
+　I will go.
+　?? : From the keyboard? Enter to return the name of the satellite currently being tracked.
+　Q: Enter Q to return to the main menu. If the rotator is under control, control
+　You will be interrupted immediately and the screen will return to the in-menu.
+
+　*** Select tracking satellite ***
+ 　1. AO-10 2. RS-10 / 11 3. UO-11 4. RS-12 / 13 5. AO-13
+ 　6. UO-14 7. AO-16 8. DO-17 9. WO-18 10. LO-19
+　11. * FO-20 12. AO-21 13. UO-22 14. Mir 15. STS 45
+
+　Here, the satellites marked with * are the satellites that were selected last time. Next time you select
+　It will be the default satellite.
+
+2-6-7 Multi-satellite tracking
+
+　Enter M (Multi Track) in the main menu.
+
+  　      ****************************************
+    　    * TrakBox 8052 V3.00 *
+      　  * (C) JAMSAT / JA6FTL Jan.15 1993 *
+     　   ****************************************
+
+        ------ MAIN MENU ------
+
+        1. Realtime Tracking.
+        2. Display Schedule.
+        3. Update Satellite Elements.
+        4. Update Station Elements.
+        5. Update Realtime Clock.
+        6. Configuration.
+        7. Host mode.
+        8. Direct Antenna control.
+
+        Select [1-8, S, M]: m <-Enter M
+
+　Then, which of the satellites designated for multi-tracking will be displayed on the LCD display.
+
+                              --35 -
+　
+  You will be asked if you want to display it, so specify from 1 to 5. If multi-track pieces
+　If more satellites are selected, an error will occur and the LCD will display Number Excel.
+　ed!
+　And an error message is displayed.
+
+  　      *** Select object satellite for LCD display (1-5) ***
+
+ 　1. * UO-22A 2. UO-22B 3. KO-23A 4. AO-21
+　 5. AO-13B 6. AO-16 7. DO-17 8. WO-18
+　 9. LO-19 10. FO-20A 11. FO-20B 12. AO-13L
+　13. AO-13S 14. AO-10
+
+   　     Select: 1 <-Select 1
+
+
+         ========== Realtime Tracking [1993/01/17] =========
+
+  'E'Toggle rotor control'P'Toggle priority track'Q'Return to main menu
+
+  HH: MM: SS UO-22A UO-22B KO-23A AO-21 AO-13B
+
+　01: 41: 01 7.9 / -39.1 7.9 / -39.1 24.8 / -26.0 268.3 / -57.4 343.6 / -15.9
+
+　The position calculation of the number of satellites selected in the main menu 3-4 is executed and displayed every moment.
+　increase. At the same time, the satellite selected earlier (here, UO-22A) becomes the LCD display.
+　It shows. The satellites assigned to the satellite selection switches 1 to 5 are targeted.
+
+　　　　Commands that can be entered in multi-tracking mode
+　E: Antenna control on / off. It is a toggle switch. While on
+　　　Will display a tracking mark. Antenna control is on
+　　　When any of the satellites displayed as AOS is AOS, the above-mentioned single track is automatically performed.
+　　　It shifts to the mode and starts tracking the satellite.
+　P: It is a toggle switch when the priority track is turned on and off. on
+　　　Sometimes the tracking mark shows "&" and when it is off, it shows "!".
+　　　Here, the priority track is the transition from this multi-track mode.
+　　　A satellite with a higher priority than this satellite is tracking a satellite that is in single track mode.
+　　　With the function to stop tracking this satellite and track the satellite with high priority when AOS is performed.
+　　　vinegar. The priority is 1> 2> 3> 4> 5 in the order of satellite selection assignment number.　　　
+
+                                 --36 -
+
+　　　This function calculates the positions of all satellites every 60 seconds even during satellite tracking and is currently tracking.
+　　　It is realized by detecting the AOS of the satellite with higher priority than the satellite of. rice field
+　　　Speaking of the above case, if KO-23 is AOS while tracking AO-13
+　　　It will automatically shift to KO-23 tracking. Furthermore, before KO-23 was LOS
+　　　　When UO-22 becomes AOS, it changes to UO-22 tracking. AOS satellite
+　　　　When it runs out, it will return to the first multitrack.
+　Q: Return to the main menu.
+
+2-6-8 Host mode
+
+　　Version 3.00 adds a new host mode feature. This function is C
+　Antennas and transmission / reception connected to TrackBox with simple commands via OM port
+　It enables control of the credit machine. If devised, remote control via TNC, etc.
+　It can be applied to.
+
+　Select 7 in the main menu.
+
+　　 ------ MAIN MENU ------
+
+　　1. Realtime Tracking.
+　　2. Display Schedule.
+　　3. Update Satellite Elements.
+　　4. Update Station Elements.
+　　5. Update Realtime Clock.
+　　6. Configuration.
+　　7. Host mode.
+　　8. Direct Antenna control.
+  　　      Select [1-8, S, M]: 7 <－－－ Select 7
+
+　TrakBox host mode.
+　Command: MUxxx, MDxxx, FUxxx, FDxxx, AZxxx_ELxx, Sxxx, Q,? A,?
+
+　TrakBox >>
+
+　Then TrakBox >> and the host mode prompt appeared and I entered host mode.
+　I understand. Configuration required for main menu 6 before entering this mode
+　It is necessary to perform the operation. The commands that can be used in host mode are:
+
+                                   --37 -
+　
+  MUxxx: Uplink mode. xxx = FM / USB / LSB
+　MDxxx: Downlink mode. xxx = FM / USB / LSB
+　FUxxx: Applink frequency. Accurately insert up to 10Hz.
+　　　　　　　Example FU14512345 <= 145.1234MHz
+　FDxxx: Downlink frequency. Accurately insert up to 10Hz.　　　　
+　　　　　　　Example FD4350000 <= 435.000MHz
+　AZxxx_ELxx: Horizontal and vertical rotator target values. Add up to 1 degree.
+　　　　　　Example AZ145 EL30 Horizontal 145 degrees Vertical 30 degrees A space is required
+　It is important. If the antenna points in the specified direction, a prompt will appear, but some character will appear on the way.
+　If you enter a Kuta character, the operation will be interrupted.
+
+　Sxxx: Simply outputs the string xxx to the CAT port.
+　　　　　　　Example STX; <-If KENWOOD, turn on transmission.
+　Q: Exit the host mode and return to the main menu.
+
+　?? A: Report the current value of the antenna.
+
+　?? : Shows the available commands.
+
+　Since the state of the host mode is stored in the RAM, the TrackBox in the host mode
+　When the power is turned off, it will start up in host mode the next time the power is turned on.
+
+
+                                   --38 -
+
+ 2-7 How to use in standalone mode
+
+
+　Stand-alone that operates independently without connecting a terminal to "TracBox"
+　In mode, you will be using the real-time tracking feature. Multi-traff
+　The function also works. To use it in standalone mode, check the following items
+　Therefore, it must be set correctly in terminal mode.
+
+　　　　　[Required item]
+
+　　　　2-6-1 Input of QTH information of own station (Main menu 4)
+　　　　2-6-2 Real-time clock calibration (main menu 5)
+　　　　2-6-3 Update of orbital elements (Main Menu 3)
+　　　　　　　　　　Assignment to satellite selection SW (main menu 3)
+　　　　　　　　　　
+
+　　　　　[Items required for rotator control]
+
+　　　　2-6-5 Configuration (Main Menu 6)
+　　　　　　　　　　Submenu-1
+　　　　　　　　　　Submenu-3
+　　　　　　　　　　Submenu-4
+
+　　　　[Items required to control the frequency of the rig]
+
+　　　　2-6-5 Configuration (Main Menu 6)
+　　　　　　　　　　Submenu-7
+
+　After setting the above items, you can switch to the stand-alone mode by following the steps below.
+　increase.
+　　　　1. 1. Set the satellite selection SW to a position other than 0.
+　　　　2. 2. Press the reset button or turn off the power and then turn it on.
+　　　　　　　To.
+
+　When launched in this way, it becomes a liquid crystal display for a moment.
+
+        　  TrakBox v3.00
+           (c) JAMSAT / JA6FTL
+
+                                   --39 -
+　
+  Is displayed, and immediately after that, the satellite corresponding to the position of the satellite selection SW is calculated.
+　Will start, and the display on the LCD will change as follows.
+           12:30:20 UO-22
+           AZ 123.8 EL-12.5
+
+
+　In standalone mode, the device may or may not be connected. tuna
+　If so, a real-time tracking screen display will be sent to your device,
+　If you want to control the rotator controller of the antenna to track the satellite, the antenna
+　Set the control SW to On. Tacking mark (*,
+   !! , &) Is displayed.
+
+          15:51:33 * FO-20
+          AZ134.8 EL 50.2
+
+　The satellite selection switch can be changed at any time. Single track in standalone mode
+　To switch between multitrack and multitrack, set the satellite selection switch to position 0 (zero).
+　It is possible by licking. Since it is a toggle, you can freely switch between both modes.
+　Can be done. Also, during multitrack, only the satellites selected by the satellite selection switch are selected.
+　Although it is displayed on the LCD, the positions of multiple satellites are actually calculated at the same time. If ma
+　If a satellite that exceeds the number of ruchi trucks is selected, an error will occur and the LCD will display Num.　
+    ber Exceed!
+　And an error message is displayed.
+
+　To return to terminal mode for updating satellite orbital elements, follow the steps below.
+　vinegar.
+
+　　　　1. 1. Set the satellite selection switch to position 0.
+　　　　2. 2. Press the reset button or turn off the power and then turn it on.
+　　　　　　　To.
+
+　About automatic tracking by microphone click
+
+　When receiving PSK such as AO-16, Doppler correction with an accuracy of about + -50Hz is required.
+　However, it is extremely difficult to achieve this value using the CAT method.
+　TrackBox's microphone click Doppler correction is a closed loop by analog AFC method.
+　The feedback method is adopted. Modem PLL or FM demodulator
+　The reference voltage of is read by the ADC of TrakBox, and A at the time of locking or tuning.
+
+                                 --40 -
+
+　A frequency up or down pulse is generated to bring it closer to the DC value.
+　In order to perform automatic operation, the receiver must be tuned to the frequency at the time of AOS in advance.
+　Must be. TrakBox achieves this by the method described below.
+
+        Enter Step frequency [Hz]: 100 <-1
+        Frequency set CAT command at AOS? [Y / N] y <-2
+        Automatic up pulse generation at AOS? [Y / N] y <-3
+        Porlarity of step pulse, Normal / Reverse? [N / R] n <-4
+
+　In the configuration menu 8, the frequency step (1: 100Hz above) is indicated.
+　It is set and the automatic up pulse generation option (3 above) is set to Y.
+　And TrackBox execute the frequency setting at the time of AOS by the following method.
+
+　The frequency at the time of the previous LOS is recorded in the memory, and the difference in frequency is taken up at the next AOS.
+　Calculate the number of pulses.
+　
+　(Example) F1: Fundamental frequency F_AOS: Calculated frequency at AOS
+　　　　　F_LOS: Frequency of the previous orbit during LOS
+　　　　　F_step: Frequency step
+
+　(1) When a satellite is selected, F1 of satellite information is stored in memory. (Receiver
+　　　　　Set the dial to this frequency as well.) When the satellite is AOS, at this point
+　　　　　The difference from the frequency (F_AOS) after Doppler correction is the step value (S_st).
+　　　　　The number divided by ep) is the number of uppulses. When the elevation angle reaches -2 degrees, a pulse is emitted.
+　　　　　It is output to the port.
+　(2) After AOS, use analog AFC of modem or AFC of TrackBox to LOS.
+　　　　　Frequency tracking is performed up to.
+　(3) The frequency (F_LOS) at the time of LOS is stored in memory and waits for the next AOS.
+　(4) At the next AOS, the frequency is set to A by (F_AOS-F_LOS) ÷ F_step.
+　　　　　A pulse that pulls back to the value at the time of OS is sent.
+　　　　　At this time, the progress is displayed on the display as follows.
+
+   　fdx / f_diff / pulse: 435.120000/9772/97
+   　UP pulse: * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * _ * ............
+
+　　In this example, F1 = 435.120MHz, step 100Hz, 97 pulses
+　　Has been generated.
+
+
+                                   --41 -
+
+　About station information file (STATION.DAT)
+
+　After resetting with 9 of the main menu 6 in the file in which the information of your own station is written, it is updated.
+　Station information is set automatically by loading.
+
+　[STATION.DAT]
+　Station information file.
+　;
+　1 JA6FTL 27.391 128.657 100 South
+　2 8 859 1 442
+　3 3 1 0 0
+　4 KENWOOD AOS 1E 3F
+　5 1 270 0 1 0 360 0 90 -2.0
+
+　The ";" (semicolon) at the beginning of the line is a comment line.
+　Please note that each line is arranged in a fixed format. Each element
+　Between are space characters (tabs are not allowed).
+
+　Line number element element. .. .. .. .. .. .. .. .. The format of is:
+
+　1 Call sign Latitude Longitude Antenna height Horizontal rotor Start position
+　　　Latitude is + north latitude, south latitude is-, longitude is + east longitude, west longitude-, rotor start position
+　　　Is either South / North.
+　2 Horizontal ADC minimum value Horizontal ADC maximum value Vertical ADC minimum value Vertical ADC maximum value
+　　　This is the value obtained from the main menu 6-1 or 6-5.
+　3 Horizontal dead band Vertical dead band Horizontal skew Vertical skew
+　　　It is the value of the main menu 6-2.
+　4 CAT rig Doppler correction ICOM-RX address Same TX address
+　　　CAT rig is either KENWOOD / YAESU / ICOM Doppler supplement
+　　　Positive issues CAT command only at AOS or issues over all orbits
+　　　It is a choice of Ruka. Specify either AOS / FULL.
+　5 On / off of parking function Horizontal parking position Vertical parking position Rotor
+　　　Rotation limit function on / off Horizontal limit minimum value Same maximum value Vertical limit minimum value
+        　Same maximum value Antenna control start elevation angle value
+　　　Function on / off is 1 = on 0 = off. Rotor rotation limit function is specified here
+　　　If it exceeds the specified range, the rotor SW will be turned off. Antenna control open
+　　　The starting elevation value is the value of the elevation angle at which the rotator starts to move. -3 times or more
+　　　Above 90 degrees is effective. -2 degrees would be appropriate.
+
+                                   --42 -
+
+　About satellite information file
+
+　After uploading the Kep1er element with the additional information of each satellite, upload this file
+　By doing so, the frequency etc. will be set automatically and the satellite written in this file will be
+　It is assigned to the selection SW.
+
+　[FREQ.DAT]
+
+　; Satellite frequency / mode information
+　Satellite name is case sensitive.
+　;
+　Sat_name downlink_freq uplink_freq downlink_mode uplink_mode
+　supported mode: usb / lsb / fm and none.
+　;
+　UO-22A 435.120 145.900 fm fm cat no
+　UO-22B 435.120 145.975 fm fm cat no
+　KO-23 435.163 145.850 fm fm cat no
+　KO-23B 435.163 145.900 fm fm cat no
+　AO-16 437.025 145.940 usb fm mic no
+　DO-17 145.825 435.000 fm none cat no
+　435.000 is dummy
+　WO-18 435.075 145.000 usb none cat no
+　LO-19 437.125 145.840 usb fm mic no
+　FO-20A 435.910 145.850 usb fm cat no
+　FO-20B 435.910 145.870 usb fm cat no
+　AO-21 145.987 435.016 fm fm mic no
+　AO-13B 145.900 435.500 usb lsb mic ma
+　AO-13L 435.850 1296.000 / -1152.000 usb lsb mic ma
+　AO-13S 2434.000 / -2290.000 435.620 usb lsb mic ma
+　AO-10 145.900 435.100 usb lsb mic ma
+　STS-47 145.550 /-100.000 435.000 / -430.000 fm fm cat no
+　;
+　; For TrakBox JA6FTL Sep.10.1992
+　
+　The format of each line is as follows:
+
+　Satellite name Downlink frequency Downlink frequency Downlink mode Downlink mode Applink
+　Mode Doppler correction method LCD phase display
+
+                                   --43 -
+
+　The satellite name must match the satellite name in the Kep1er element file. (uppercase letter,
+　The mode is either FM / USB / NONE. Doppler correction method is CA
+　Either T / MIC. The LCD phase display is either MA / NO.
+　When writing the offset of F1 F2, the frequency is as in the example of AO_13L / S above.
+　Write the offset value after the value with "/" (slash).
+
+
+
+2-8 Summary
+
+　With this version, we have taken in the requests from beta testers from each country.
+    I was able to follow many of the functions that I can think of at the moment. Especially, "TracBox"
+     By using, the computer can concentrate on the original data communication and file management.
+     Program with the control of antennas and transceivers left to a dedicated "box"
+     We have been developing. This small "magic box" is for many satellite communication people.
+     I think it has become an indispensable accessory for Mulife.
+　 Dedicate this box to more antenna and transceiver control so that it can be used for more purposes
+     For the purpose of reminding you, we have added the function of host mode. For example, on the computer side
+     Then, the current orbit information and frequency are sequentially sent to "TracBox", and the CRT is more vibrant.
+     Aspects such as combining with applications and communication software that focus on dual information
+     A white attempt is awaited.
+　 In the future, we will not officially release the ROM form or manual version upgrade.
+     We will make it possible to obtain images such as ROM through the computer and JDB. Get it yourself
+     Please upgrade the version.
+      If you have any questions about TrackBox, please send them to JDB or the following in writing. as much as possible
+      We will answer, but please allow 3 to 5 weeks.
+      In the case of writing, please use a round-trip postcard.
+
+　　　　
+         5-16-9 Honkomagome, Bunkyo-ku, Tokyo 113
+　　　　　　　　　Society Office Center C21
+　　　　　　　　　Inside the Japan Society Office
+　　　　　　　　　　Japan Amateur Satellite Communication Association
+                    To the person in charge of distribution
+　　　　　　　　　　
+　　　　　　　　　　　　　　　　　　　　　　　　　　All developers / JAMSAT
+
+
+
+                                   -44-
+
+

@@ -1,0 +1,44 @@
+; FREQ.DAT   for TrakBox v3.20d - v3.50b     98-Dec 15
+; Satellite frequency/mode information
+; Satellite name is case sensitive.
+; 
+; [Array format]
+; Sat_name  downlink_freq[/F1 offset]  uplink_freq_1[,_2,_3,_4][/F2 offset]
+; downlink_mode  uplink_mode  CAT/Mic_click  Phase_display_on_LCD(ma/no)
+; [ICOM/KENWOOD_reverse(ir/kr)]
+; each element must be delimited by space character.
+; The top 5 satellites are set for multiple tracking.
+;
+UO-22  435.120 145.975,145.900 fm fm cat no
+KO-23  435.175 145.900,145.850 fm fm cat no
+KO-25  436.500 145.980 fm fm cat no
+FO-20  435.910 145.850,145.870,145.890,145.910 usb fm cat no
+FO-29  435.920 145.850,145.860,145.880,145.890 fm  fm cat no
+AO-16  437.050 145.900,145.920,145.940,145.960 usb fm cat no
+LO-19  437.125 145.840,145.860,145.880,145.900 usb fm cat no
+IO-26  435.867 145.875 usb fm mic no
+AO-27  436.800 145.850 fm fm cat no
+AO-21  145.987 435.016 fm fm cat no
+DO-17  145.825 435.000 fm none cat no
+; 435.000 is dummy
+POSAT  435.280 145.975 fm fm cat no
+WO-18  435.075 145.000 usb none cat no
+AO-13S 2400.730/-2256.000 435.620 usb lsb mic ma
+AO-13B 145.900 435.500 usb lsb mic ma
+AO-10  145.900 435.100 usb lsb mic ma
+AO-13  145.900 435.500 usb lsb mic ma
+ARSENE 2446.540/-2302.0 435.100 usb lsb mic ma
+UO-11  145.826 435.000 FM FM CAT no
+NOAA-9 137.780 435.000 FM FM CAT no
+UO-14  429.985 145.000 FM FM CAT no
+;
+; [Offset description]
+; In AO-13 mode-S, CAT Freq is issued as 2400.73-2256=144.700MHz for
+; down converter which has 2256.00MHz local oscillator.
+;
+; [kr/ir description]
+; AO-13B 145.900 435.500 usb lsb mic ma ir  <= ICOM reverse addressing
+; In separated TRX (ICOM275/475, KENWOOD711/811), there needed reverse
+; addressing in changing mode-B to mode-J. You can exchange the port
+; address by "ir" or "kr" option.
+
