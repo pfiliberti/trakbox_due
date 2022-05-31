@@ -4,6 +4,8 @@
 /*          (C) JG6MCG,Yasunari Gen/Southern NET 1991                 */
 /*              JA6FTL,Sueo Asato                                     */
 /*            14,Wadomari,Kagoshima,891-91,JAPAN                      */
+/*            Released under MIT License, located here:               */
+/* https://github.com/pfiliberti/trakbox_due/blob/20df6d80123f2a027c8e4ec960ef88d0ae74d38b/TrakboxOriginal/Firmware/Source/LICENSE */
 /**********************************************************************/
 /******* version up history **********/
 /* Added LCD module driver via 8255 port A&B     30,Oct         */
