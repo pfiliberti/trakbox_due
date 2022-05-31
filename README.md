@@ -1,5 +1,5 @@
 # trakboxDue
-Emulator of Amsat/Jamsat Trakbox Hardware, emulates 8052 Processor and all i/o so original software images can run.
+Information on Jamsat/TAPR Trakbox Hardware and Software. Work on new version of Trakbox on newer hardware.
 
 IMPORTANT UPDATE! Originally, this was going to be a project to emulate the older trakbox hardware including CPU so that older firmware image would operate on newer ARM based hardware. This was due to the fact I could not make contact with original Author and there was concern that the original software was lost. However, after one more try to find the Author, we have had success! Dr. Sasato JA6FTL sent me the following email on June 20th of 2021.
 ------------------------------------------------------------------
