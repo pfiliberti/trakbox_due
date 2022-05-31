@@ -1,0 +1,19 @@
+Hello OM,
+I had phone call from Wakitasan,JE8PEL about my old C-source code of
+TrakBOx.
+It has flown many time after the last TrakBox EPROM release.
+My TrakBOx development system was missing due to old PC failure.
+After searching the PC from my junk box, finally ang fortunately, I found
+The broken PC and extract IDE hard disk.
+Here I enclosed the C-source code for 8052, 80C320, 80C251 CPU
+If you need the DEFINE, INCLUDE files for compiling I will forward you
+The total system files of compiler set.
+
+The enclosed ZIP file has
+W3IWI's original tracking BASIC code which I implemented for C
+The latest source code  ETC.
+
+I hope the code is helpful for your project.
+BTW, what is the CPU you intend to implement?
+
+73s  de  JA6FTL
