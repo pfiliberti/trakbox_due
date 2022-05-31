@@ -1,7 +1,23 @@
 # trakboxDue
 Information on Jamsat/TAPR Trakbox Hardware and Software. Work on new version of Trakbox on newer hardware.
 
-IMPORTANT UPDATE! Originally, this was going to be a project to emulate the older trakbox hardware including CPU so that older firmware image would operate on newer ARM based hardware. This was due to the fact I could not make contact with original Author and there was concern that the original software was lost. However, after one more try to find the Author, we have had success! Dr. Sasato JA6FTL sent me the following email on June 20th of 2021.
+IMPORTANT UPDATE! Originally, this was going to be a project to emulate the older trakbox hardware including CPU so that older firmware image would operate on newer ARM based hardware. This was due to the fact I could not make contact with original Author and there was concern that the original software was lost. However, after one more try to find the Author, we have had success! Dr. Sasato JA6FTL sent me the following emails. I have been given permission to share the original Trakbox source code and will do so using the MIT License. See LICENSE file for License Information.
+
+May 28th, 2022:
+------------------------------------------------------------------
+Hello, KF7PSM, Peter
+Congratulations for your "Update TrakboxDue Project".
+
+> Is it ok to publish the trakbox software you made on my page?
+
+Yes, OK to publish it all over the world!
+Please specify that JAMSAT, JA6FTL, W3IWI and KF7PSM has the copyright.
+
+http://www.asahi-net.or.jp/~ei7m-wkt/numbr979.htm (JP)
+
+de JE9PEL, Mineo Wakita
+
+June 20th, 2021:
 ------------------------------------------------------------------
 Hello OM,
 I had phone call from Wakitasan,JE9PEL about my old C-source code of
@@ -21,7 +37,8 @@ source code  ETC.
 I hope the code is helpful for your project.
 BTW, what is the CPU you intend to implement?
 
-73s  de  JA6FTL
+73s de JA6FTL
+
 ------------------------------------------------------------------
 
 He did a lot of work to recover the source code of the original Trakbox! 
